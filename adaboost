@@ -1,0 +1,18 @@
+from sklearn.ensemble import AdaBoostClassifier
+
+# Train AdaBoost Classifier
+ab_clf = AdaBoostClassifier(n_estimators=50, random_state=0)
+ab_clf.fit(X_train, y_train)
+
+# Predict and evaluate
+y_pred = ab_clf.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"AdaBoost Accuracy: {accuracy:.2f}")
+
+# Plot decision boundary
+plt.figure()
+Z = ab_clf.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+plt.contourf(xx, yy, Z, alpha=0.8, cmap=plt.cm.RdYlBu)
+plt.scatter(X[:, 0], X[:, 1], c=y, edgecolor='k', cmap=plt.cm.RdYlBu)
+plt.title('AdaBoost Decision Boundary')
+plt.show()
