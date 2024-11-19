@@ -1,0 +1,33 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+np.random.seed(0)
+X = np.linspace(1, 100, 100)
+y = 2.5 * X + 10 + np.random.randn(100) * 10
+data = pd.DataFrame({'X': X, 'Y': y})
+print(data.head())
+X = data['X'].values.reshape(-1, 1)
+y = data['Y'].values.reshape(-1, 1)
+X_b = np.c_[np.ones((X.shape[0], 1)), X]  # Add a bias column (X0 = 1)
+theta = np.random.randn(2, 1)  # Random initialization of theta
+learning_rate = 0.01
+n_iterations = 1000
+def gradient_descent(X, y, theta, learning_rate, iterations):
+    m = len(y)
+    for i in range(iterations):
+        gradients = (2/m) * X.T.dot(X.dot(theta) - y)
+        theta -= learning_rate * gradients
+    return theta
+theta = gradient_descent(X_b, y, theta, learning_rate, n_iterations)
+y_pred = X_b.dot(theta)
+plt.figure(figsize=(6, 4))
+plt.scatter(X, y, color='blue', label='Data points')
+plt.plot(X, y_pred, color='red', label='Linear Regression')
+plt.xlabel('X')
+plt.ylabel('y')
+plt.legend()
+
+plt.title('Linear Regression')
+plt.show()
+print(f"Intercept (theta_0): {theta[0][0]}")
+print(f"Slope (theta_1): {theta[1][0]}")
