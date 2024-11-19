@@ -1,0 +1,89 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+pd.set_option('display.max_columns', None)
+pd.set_option('display.float_format', '{:.2f}'.format)
+import pandas as pd
+import numpy as np
+# Set random seed for reproducibility
+np.random.seed(42)
+data = {
+    'ID': range(1, 101),
+    'Name': [f'Person_{i}' for i in range(1, 101)],
+    'Age': np.random.randint(18, 60, size=100),
+    'Salary': np.random.randint(30000, 120000, size=100),
+    'Department': np.random.choice(['HR', 'Finance', 'IT', 'Marketing'], size=100),
+    'Experience': np.random.randint(1, 30, size=100),
+    'Rating': np.round(np.random.uniform(1.0, 5.0, size=100), 1)
+}
+# Convert to DataFrame
+df = pd.DataFrame(data)
+# Introduce missing values randomly in numerical columns
+for col in ['Age', 'Salary', 'Experience', 'Rating']:
+    df.loc[df.sample(frac=0.1).index, col] = np.nan  # 10% missing values per column
+# Save to CSV
+df.to_csv('comprehensive_data.csv', index=False)
+# Display the first 5 rows of the CSV
+print("Sample data saved to 'comprehensive_data.csv'. Here are the first 5 rows:")
+display(df.head())
+# Display the summary of missing values
+print("\nSummary of missing values:")
+display(df.isnull().sum())
+print("\nSummary statistics for numerical columns:")
+display(df.describe())
+# Task 2: Identify missing values in the dataset and fill them with the median value of their respective columns
+# Select only the numerical columns
+numerical_columns = df.select_dtypes(include=['number']).columns
+# Fill missing values in each numerical column with its median
+for col in numerical_columns:
+    # Calculate the median of the column, ignoring NaN values
+    median_value = df[col].median()
+    df[col].fillna(median_value, inplace=True)
+# Verify that there are no missing values left in the numerical columns
+print("\nMissing values after filling with median (numerical columns only):")
+print(df.isnull().sum())
+# Display the first 5 rows to confirm the missing values are filled
+print("\nFirst 5 rows after filling missing values:")
+display(df.head())
+#Task 3: Filter the dataset based on a numerical column's value
+# Example: Filter rows where 'Age' > 30
+filtered_df = df[df['Age'] > 30]
+print("\nFirst 5 rows where Age > 30:")
+print(filtered_df.head())
+# Task 4: Group the dataset by a categorical column and calculate statistic
+# Group by 'Department' and calculate the mean and standard deviation of numerical columns
+grouped_stats = df.groupby('Department').agg({
+    'Age': ['mean', 'std'],
+    'Salary': ['mean', 'std'],
+    'Experience': ['mean', 'std'],
+    'Rating': ['mean', 'std']
+})
+print("\nMean and Standard Deviation by Department:")
+print(grouped_stats)
+# Task 5: Merge two DataFrames on a common column
+# Create a second DataFrame for merging
+df2 = df[['ID', 'Department']].copy()
+df2['Project'] = np.random.choice(['Project_A', 'Project_B', 'Project_C'], size=len(df2))
+# Merge the original DataFrame 'df' with 'df2' on 'ID'
+merged_df = pd.merge(df, df2, on='ID')
+print("\nFirst 5 rows of the merged DataFrame:")
+print(merged_df.head())
+# Task 6: Create a new column based on existing columns
+#Adding a new column 'Bonus' which is 10% of the 'Salary'
+df['Bonus'] = df['Salary'] * 0.10
+print("\nFirst 5 rows with the new 'Bonus' column added:")
+print(df.head())
+# Task 7: Calculate and display the correlation matrix for numeric columns only
+numeric_df = df.select_dtypes(include=[np.number])  # Select only numeric columns
+correlation_matrix = numeric_df.corr()  # Compute the correlation matrix for numeric columns
+print("\n Correlation Matrix:")
+print(correlation_matrix)
+#Task 8: Generate a scatter plot to visualize the relationship between two numerical columns
+plt.figure(figsize=(8, 5))
+plt.scatter(df['Age'], df['Salary'], alpha=0.7, edgecolors='w')
+plt.xlabel('Age')
+plt.ylabel('Salary')
+plt.title('Scatter Plot: Age vs Salary')
+plt.grid(True)
+plt.show()
