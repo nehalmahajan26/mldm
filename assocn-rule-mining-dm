@@ -1,0 +1,107 @@
+1. 
+from itertools import combinations
+
+# Sample transactions
+transactions = [
+    {"Milk", "Bread", "Butter"},
+    {"Bread", "Butter"},
+    {"Milk", "Bread", "Sugar"},
+    {"Milk", "Sugar"},
+    {"Milk", "Bread", "Butter", "Sugar"},
+    {"Bread", "Sugar"},
+    {"Milk", "Bread"}
+]
+
+# Function to calculate support
+def calculate_support(transactions):
+    itemsets = {}
+    for t in transactions:
+        for size in range(1, len(t) + 1):
+            for combo in combinations(t, size):
+                combo = frozenset(combo)
+                if combo in itemsets:
+                    itemsets[combo] += 1
+                else:
+                    itemsets[combo] = 1
+    return itemsets
+
+# Calculate support for all itemsets
+support = calculate_support(transactions)
+
+# Display results
+print({k: v / len(transactions) for k, v in support.items()})
+
+
+
+
+2. 
+# Function to generate frequent itemsets
+def get_frequent_itemsets(itemsets, min_support, total_transactions):
+    return {itemset: count / total_transactions for itemset, count in itemsets.items() if (count / total_transactions) >= min_support}
+
+# Example: Minimum support threshold of 0.4 (40%)
+min_support_threshold = 0.4
+frequent_itemsets = get_frequent_itemsets(support, min_support_threshold, len(transactions))
+
+# Display results
+print(frequent_itemsets)
+
+
+
+3. 
+# Function to calculate confidence for rules
+def calculate_confidence(frequent_itemsets, total_transactions):
+    rules = []
+    for itemset in frequent_itemsets:
+        if len(itemset) > 1:
+            subsets = [frozenset(x) for i in range(1, len(itemset)) for x in combinations(itemset, i)]
+            for s in subsets:
+                confidence = frequent_itemsets[itemset] / frequent_itemsets.get(s, 0)
+                rules.append((s, itemset - s, confidence))
+    return rules
+
+# Example: Calculate confidence
+association_rules = calculate_confidence(frequent_itemsets, len(transactions))
+
+# Display results
+print(association_rules)
+
+
+
+4. 
+# Function to calculate lift
+def calculate_lift(rules, frequent_itemsets, total_transactions):
+    lifts = []
+    for antecedent, consequent, confidence in rules:
+        antecedent_support = frequent_itemsets[antecedent]
+        consequent_support = frequent_itemsets[consequent]
+        lift = confidence / consequent_support
+        lifts.append((antecedent, consequent, lift))
+    return lifts
+
+# Example: Calculate lift
+lift_metrics = calculate_lift(association_rules, frequent_itemsets, len(transactions))
+
+# Display results
+print(lift_metrics)
+
+
+5. 
+import matplotlib.pyplot as plt
+
+# Function to plot bar chart of frequent itemsets
+def plot_frequent_itemsets(frequent_itemsets):
+    itemsets = [' & '.join(list(k)) for k in frequent_itemsets.keys()]
+    support_values = list(frequent_itemsets.values())
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(itemsets, support_values, color='skyblue')
+    plt.xlabel('Frequent Itemsets')
+    plt.ylabel('Support')
+    plt.title('Frequent Itemsets Support')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.show()
+
+# Plot frequent itemsets
+plot_frequent_itemsets(frequent_itemsets)
