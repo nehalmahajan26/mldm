@@ -1,0 +1,23 @@
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+
+# Train Decision Tree Classifier
+dt_clf = DecisionTreeClassifier(random_state=0)
+dt_clf.fit(X_train, y_train)
+
+# Predict and evaluate
+y_pred = dt_clf.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Decision Tree Accuracy: {accuracy:.2f}")
+
+# Plot decision boundary
+plt.figure()
+Z = dt_clf.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+plt.contourf(xx, yy, Z, alpha=0.8, cmap=plt.cm.RdYlBu)
+plt.scatter(X[:, 0], X[:, 1], c=y, edgecolor='k', cmap=plt.cm.RdYlBu)
+plt.title('Decision Tree Decision Boundary')
+plt.show()
+
+# Visualize the tree
+plt.figure(figsize=(12, 8))
+plot_tree(dt_clf, filled=True, feature_names=['Feature 1', 'Feature 2'], class_names=['Class 0', 'Class 1'])
+plt.show()
