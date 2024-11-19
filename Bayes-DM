@@ -1,0 +1,66 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import confusion_matrix, classification_report
+url = 'https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv'
+titanic_data = pd.read_csv(url)
+titanic_data['Age'].fillna(titanic_data['Age'].median(), inplace=True)
+titanic_data['Embarked'].fillna(titanic_data['Embarked'].mode()[0], inplace=True)
+titanic_data.drop(columns=['Cabin', 'Name', 'Ticket', 'PassengerId'], inplace=True)
+titanic_data['Sex'] = titanic_data['Sex'].map({'male': 0, 'female': 1})
+titanic_data['Embarked'] = titanic_data['Embarked'].map({'S': 0, 'C': 1, 'Q': 2})
+X = titanic_data.drop(columns='Survived')
+y = titanic_data['Survived']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+gnb = GaussianNB()
+gnb.fit(X_train, y_train)
+y_pred = gnb.predict(X_test)
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+cv_scores = cross_val_score(gnb, X, y, cv=10)
+print(f"\n10-Fold Cross-Validation Accuracy: {cv_scores.mean():.4f}")
+
+---
+
+
+!pip install pgmpy
+
+
+---
+import pandas as pd
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import confusion_matrix, classification_report
+from pgmpy.models import BayesianNetwork
+from pgmpy.estimators import MaximumLikelihoodEstimator
+from pgmpy.inference import VariableElimination
+url = 'https://raw.githubusercontent.com/datasciencedojo/datasets/master/titanic.csv'
+titanic_data = pd.read_csv(url)
+titanic_data['Age'].fillna(titanic_data['Age'].median(), inplace=True)
+titanic_data['Embarked'].fillna(titanic_data['Embarked'].mode()[0], inplace=True)
+titanic_data.drop(columns=['Cabin', 'Name', 'Ticket', 'PassengerId'], inplace=True)
+titanic_data['Sex'] = titanic_data['Sex'].map({'male': 0, 'female': 1})
+titanic_data['Embarked'] = titanic_data['Embarked'].map({'S': 0, 'C': 1, 'Q': 2})
+X = titanic_data.drop(columns='Survived')
+y = titanic_data['Survived']
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+gnb = GaussianNB()
+gnb.fit(X_train, y_train)
+y_pred = gnb.predict(X_test)
+print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
+cv_scores = cross_val_score(gnb, X, y, cv=10)
+print(f"\n10-Fold Cross-Validation Accuracy: {cv_scores.mean():.4f}")
+model = BayesianNetwork([
+    ('Pclass', 'Survived'),
+    ('Sex', 'Survived'),
+    ('Age', 'Survived'),
+    ('SibSp', 'Survived'),
+    ('Parch', 'Survived'),
+    ('Embarked', 'Survived'),
+])
+model.fit(titanic_data, estimator=MaximumLikelihoodEstimator)
+inference = VariableElimination(model)
+query_result = inference.query(variables=['Survived'], evidence={'Age': 28, 'Sex': 1, 'Pclass': 1})
+print("\nProbability of survival (given Age=28, Sex=female, Pclass=1):")
+print(query_result)
