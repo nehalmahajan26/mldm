@@ -1,0 +1,58 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Generate synthetic data for binary classification
+np.random.seed(0)
+X = np.random.randn(100, 2) * 5
+y = (X[:, 0] + X[:, 1] > 0).astype(int)  # Label: 0 or 1
+y = np.where(y == 0, -1, 1)  # Convert labels to -1 and 1 for SVM
+
+data = pd.DataFrame({'X1': X[:, 0], 'X2': X[:, 1], 'y': y})
+print(data.head())
+y = y.reshape(-1, 1)
+X_b = np.c_[np.ones((X.shape[0], 1)), X]
+
+# Initialize weights
+theta = np.random.randn(X_b.shape[1], 1)
+
+# Hyperparameters
+learning_rate = 0.01
+lambda_param = 0.01
+n_iterations = 1000
+
+def svm_gradient_descent(X, y, theta, learning_rate, lambda_param, iterations):
+    m = len(y)
+    for i in range(iterations):
+        # Calculate hinge loss gradients
+        margins = y * X.dot(theta)
+        gradients = np.zeros_like(theta)
+
+        for j in range(m):
+            if margins[j] >= 1:
+                gradients += 2 * lambda_param * theta
+            else:
+                gradients += 2 * lambda_param * theta - y[j] * X[j:j+1].T
+
+        # Update weights
+        theta -= learning_rate * gradients / m
+    return theta
+
+theta = svm_gradient_descent(X_b, y, theta, learning_rate, lambda_param, n_iterations)
+
+def plot_decision_boundary(X, y, theta):
+    plt.scatter(X[y.flatten() == 1][:, 0], X[y.flatten() == 1][:, 1], color='blue', label='Class 1')
+    plt.scatter(X[y.flatten() == -1][:, 0], X[y.flatten() == -1][:, 1], color='red', label='Class -1')
+
+    x_values = np.linspace(np.min(X[:, 0]), np.max(X[:, 0]), 100)
+    y_values = -(theta[1] * x_values + theta[0]) / theta[2]
+    plt.plot(x_values, y_values, color='green', label='Decision Boundary')
+
+    plt.xlabel('X1')
+    plt.ylabel('X2')
+    plt.legend()
+    plt.title('SVM Decision Boundary')
+    plt.show()
+
+plot_decision_boundary(X, y, theta)
+print(f"Weights: {theta.flatten()}")
