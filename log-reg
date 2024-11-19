@@ -1,0 +1,62 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Generate synthetic data for binary classification
+np.random.seed(0)
+X = np.linspace(1, 100, 100)  # Features
+y = (X > 50).astype(int)  # Labels: 0 if X <= 50, 1 otherwise
+y += np.random.choice([0, 1], size=y.shape, p=[0.9, 0.1])  # Add some noise
+
+# Create a DataFrame
+data = pd.DataFrame({'X': X, 'y': y})
+print(data.head())
+
+# Reshape X and y
+X = data['X'].values.reshape(-1, 1)
+y = data['y'].values.reshape(-1, 1)
+
+# Add a bias term to X
+X_b = np.c_[np.ones((X.shape[0], 1)), X]
+
+# Initialize weights
+theta = np.random.randn(2, 1)
+
+# Hyperparameters
+learning_rate = 0.01
+n_iterations = 1000
+
+def sigmoid(z):
+    return 1 / (1 + np.exp(-z))
+
+def compute_cost(X, y, theta):
+    m = len(y)
+    h = sigmoid(X.dot(theta))
+    cost = -(1/m) * (y.T.dot(np.log(h)) + (1 - y).T.dot(np.log(1 - h)))
+    return cost
+
+def gradient_descent(X, y, theta, learning_rate, iterations):
+    m = len(y)
+    for i in range(iterations):
+        h = sigmoid(X.dot(theta))
+        gradients = (1/m) * X.T.dot(h - y)
+        theta -= learning_rate * gradients
+    return theta
+
+theta = gradient_descent(X_b, y, theta, learning_rate, n_iterations)
+y_pred = sigmoid(X_b.dot(theta)) >= 0.5
+plt.scatter(X, y, color='blue', label='Data points')
+plt.plot(X, sigmoid(X_b.dot(theta)), color='red', label='Logistic Regression')
+plt.xlabel('X')
+plt.ylabel('Probability')
+plt.legend()
+plt.title('Logistic Regression')
+plt.show()
+
+# Print final weights
+print(f"Intercept (theta_0): {theta[0][0]}")
+print(f"Coefficient (theta_1): {theta[1][0]}")
+
+# Accuracy
+accuracy = np.mean(y_pred == y)
+print(f"Model Accuracy: {accuracy * 100:.2f}%")
